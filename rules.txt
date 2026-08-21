@@ -1,0 +1,8 @@
+se sua classe precisa definir um destes cinco métodos especiais,
+provavelmente precisa considerar os cinco:
+
+Destrutor
+Construtor de cópia
+Operador de atribuição por cópia
+Construtor de movimento
+Operador de atribuição por movimento

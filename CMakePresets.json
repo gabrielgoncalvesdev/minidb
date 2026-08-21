@@ -1,0 +1,34 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+    "configurePresets": [
+      {
+        "name": "debug",
+        "displayName": "Debug (ASan+UBSan, warnings-as-errors)",
+        "generator": "Unix Makefiles",
+        "binaryDir": "${sourceDir}/build/debug",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug",
+          "MINIDB_SANITIZE": "ON"
+        }
+      },
+      {
+        "name": "release",
+        "displayName": "Release (-O2, sem sanitizers)",
+        "generator": "Unix Makefiles",
+        "binaryDir": "${sourceDir}/build/release",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release",
+          "MINIDB_SANITIZE": "OFF"
+        }
+      }
+    ],
+    "buildPresets": [
+      { "name": "debug",   "configurePreset": "debug",   "jobs": 12 },
+      { "name": "release", "configurePreset": "release", "jobs": 12 }
+    ],
+    "testPresets": [
+      { "name": "debug", "configurePreset": "debug", "output": { "outputOnFailure": true }
+  }
+    ]
+  }

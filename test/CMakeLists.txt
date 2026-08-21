@@ -1,0 +1,16 @@
+# test/CMakeLists.txt
+add_executable(version_test common/version_test.cpp)
+target_link_libraries(version_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(version_test)
+
+add_executable(disk_manager_test storage/disk_manager_test.cpp)
+target_link_libraries(disk_manager_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(disk_manager_test)
+
+add_executable(lru_k_replacer_test buffer/lru_k_replacer_test.cpp)
+target_link_libraries(lru_k_replacer_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(lru_k_replacer_test)
+
+add_executable(buffer_pool_manager_test buffer/buffer_pool_manager_test.cpp)
+target_link_libraries(buffer_pool_manager_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(buffer_pool_manager_test)

@@ -1,0 +1,10 @@
+8. Configurar, buildar e testar
+
+// quando houver alteracoes no projeto
+
+  cd ~/dataBase
+  cmake --preset debug          # configura ambiente com as novas alteracoes
+  cmake --build --preset debug  # compila com -j12 / constroi o programa 
+  ctest --preset debug          # roda os testes
+
+  // arquivos novos etc sempre lembrar de adicionar e linkar nos arquivos CMakeLists
