@@ -5,6 +5,7 @@ add_library(minidb_core
   storage/disk/disk_manager.cpp
   buffer/lru_k_replacer.cpp
   buffer/buffer_pool_manager.cpp
+  type/value.cpp
 )
 target_include_directories(minidb_core PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(minidb_core PRIVATE minidb_warnings)

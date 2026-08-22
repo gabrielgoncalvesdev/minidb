@@ -18,3 +18,7 @@ gtest_discover_tests(buffer_pool_manager_test)
 add_executable(page_guard_test storage/page_guard_test.cpp)
 target_link_libraries(page_guard_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
 gtest_discover_tests(page_guard_test)
+
+add_executable(value_test type/value_test.cpp)
+target_link_libraries(value_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(value_test)
