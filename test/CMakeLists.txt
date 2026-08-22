@@ -14,3 +14,7 @@ gtest_discover_tests(lru_k_replacer_test)
 add_executable(buffer_pool_manager_test buffer/buffer_pool_manager_test.cpp)
 target_link_libraries(buffer_pool_manager_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
 gtest_discover_tests(buffer_pool_manager_test)
+
+add_executable(page_guard_test storage/page_guard_test.cpp)
+target_link_libraries(page_guard_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(page_guard_test)

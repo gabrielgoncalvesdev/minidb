@@ -1,4 +1,4 @@
-// test/storage/disk_manager_test.cpp
+
 #include "minidb/storage/disk/disk_manager.hpp"
 
 #include <array>
