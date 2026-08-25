@@ -22,3 +22,11 @@ gtest_discover_tests(page_guard_test)
 add_executable(value_test type/value_test.cpp)
 target_link_libraries(value_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
 gtest_discover_tests(value_test)
+
+add_executable(tuple_test storage/tuple_test.cpp)
+target_link_libraries(tuple_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(tuple_test)
+
+add_executable(table_page_test storage/table_page_test.cpp)
+target_link_libraries(table_page_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(table_page_test)
