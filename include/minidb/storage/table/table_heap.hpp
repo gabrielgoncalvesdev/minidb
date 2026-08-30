@@ -50,3 +50,4 @@ namespace minidb {
         page_id_t last_page_id_ = INVALID_PAGE_ID;
     };
 }
+

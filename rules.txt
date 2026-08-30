@@ -6,3 +6,9 @@ Construtor de cópia
 Operador de atribuição por cópia
 Construtor de movimento
 Operador de atribuição por movimento
+
+por que não usar unordered_map no RID? 
+quando usar ponteiro e quando usar referencia em c++ 
+por que usar generics no c++ se tem o tipo auto?
+para que serve struct no c++ 
+por que não lançar excessão? noexecpt 
