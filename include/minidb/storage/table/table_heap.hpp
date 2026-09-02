@@ -7,7 +7,6 @@
 #include "minidb/common/config.hpp"
 #include "minidb/common/rid.hpp"
 #include "minidb/storage/page/page.hpp"
-#include "minidb/storage/table/table_page.hpp"
 #include "minidb/storage/table/tuple.hpp"
 
 namespace minidb {

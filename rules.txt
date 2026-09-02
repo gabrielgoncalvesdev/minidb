@@ -12,3 +12,5 @@ quando usar ponteiro e quando usar referencia em c++
 por que usar generics no c++ se tem o tipo auto?
 para que serve struct no c++ 
 por que não lançar excessão? noexecpt 
+
+override é pra que? 

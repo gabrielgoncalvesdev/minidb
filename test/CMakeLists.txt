@@ -38,3 +38,11 @@ gtest_discover_tests(table_heap_test)
 add_executable(b_plus_tree_leaf_page_test storage/b_plus_tree_leaf_page_test.cpp)
 target_link_libraries(b_plus_tree_leaf_page_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
 gtest_discover_tests(b_plus_tree_leaf_page_test)
+
+add_executable(b_plus_tree_internal_page_test storage/b_plus_tree_internal_page_test.cpp)
+target_link_libraries(b_plus_tree_internal_page_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(b_plus_tree_internal_page_test)
+
+add_executable(b_plus_tree_test storage/b_plus_tree_test.cpp)
+target_link_libraries(b_plus_tree_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(b_plus_tree_test)

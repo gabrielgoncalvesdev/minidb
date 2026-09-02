@@ -10,7 +10,7 @@ namespace minidb {
 
     class PageGuard {
         public:
-        PageGuard() = default; //empty guard
+        PageGuard() = default; 
         PageGuard(BufferPoolManager* bpm, Page* page) noexcept : bpm_(bpm), page_(page) {}
 
         ~PageGuard() { Drop(); }
