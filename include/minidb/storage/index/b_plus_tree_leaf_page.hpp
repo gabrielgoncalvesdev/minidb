@@ -82,7 +82,57 @@ class BPlusTreeLeafPage {
         SetSize(half);
 
     }
-    
+
+    // remove begin.
+
+    bool RemoveKey(const K& key, const Cmp& cmp) noexcept {
+        const int i = KeyIndex(key, cmp);
+        if (i >= GetSize() || cmp(KeyAt(i), key) != 0) { return false; }
+        const int n = GetSize();
+        for (int j = i; j < n - 1; ++j) {
+            { SetEntry(j, KeyAt(j + 1), ValueAt(j + 1)); }
+        }
+        SetSize(n - 1);
+        return true;
+    }
+
+    //two sister in minimum size 
+    void MoveLastToFrontOf(BPlusTreeLeafPage& recipient) noexcept {
+        const int n = GetSize();
+        const K k = KeyAt(n - 1);
+        const V v = ValueAt(n - 1);
+        const int rn = recipient.GetSize();
+        for (int j = rn; j > 0; --j) {
+            recipient.SetEntry(j, recipient.KeyAt(j -1 ), recipient.ValueAt(j - 1));
+        }
+        recipient.SetEntry(0, k, v);
+        recipient.SetSize(rn + 1);
+        SetSize(n - 1);
+    }
+
+    void MoveFirstToEndOf(BPlusTreeLeafPage& recipient) noexcept {
+        const K k = KeyAt(0);
+        const V v = ValueAt(0);
+        const int rn = recipient.GetSize();
+        recipient.SetEntry(rn, k, v);
+        recipient.SetSize(rn + 1);
+        const int n = GetSize();
+        for (int j = 0; j < n - 1; ++j) {
+            SetEntry(j, KeyAt(j + 1), ValueAt(j + 1));
+        }
+        SetSize(n - 1);
+    }
+
+    void MoveAllTo(BPlusTreeLeafPage& recipient) noexcept {
+        const int rn = recipient.GetSize();
+        const int n = GetSize();
+        for (int j = 0; j < n; ++j) {
+            recipient.SetEntry(rn + j, KeyAt(j), ValueAt(j));
+        }
+        recipient.SetSize(rn + n);
+        SetSize(0);
+    }
+
     private:
     static constexpr std::size_t kPageTypeOff = 0;
     static constexpr std::size_t kSizeOff = 4;

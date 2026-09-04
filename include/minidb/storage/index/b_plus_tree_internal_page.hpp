@@ -80,6 +80,68 @@ namespace minidb {
             SetSize(half);
         }
 
+        [[nodiscard]] int LookupIndex(const K& key, const Cmp& cmp) const noexcept {
+            int lo = 1, hi = GetSize();
+            while (lo < hi) {
+                const int mid = lo + (hi - lo) / 2;
+                if (cmp(KeyAt(mid), key) <= 0) {
+                    lo = mid + 1;          
+                } else {
+                    { hi = mid;}
+                }
+            }
+            return lo - 1;
+        }
+
+    void RemoveAt(int i) noexcept {
+        const int n = GetSize();
+        for (int j = i; j < n - 1; ++j) {
+            SetKeyAt(j, KeyAt(j + 1)); SetValueAt(j, ValueAt(j + 1));
+        }
+        SetSize(n - 1);
+    }
+    // Left to right brother 
+    K MoveLastToFrontOf(BPlusTreeInternalPage& recipient, const K& middle) noexcept {
+        const int rn = recipient.GetSize();
+        for (int j = rn; j > 0; --j) {
+            recipient.SetKeyAt(j, recipient.KeyAt(j - 1));
+            recipient.SetValueAt(j, recipient.ValueAt(j - 1));
+        }
+        recipient.SetValueAt(0, ValueAt(GetSize() - 1));
+        recipient.SetKeyAt(1, middle);
+        recipient.SetSize(rn + 1);
+        const K new_middle = KeyAt(GetSize() - 1);
+        SetSize(GetSize() - 1);
+        return new_middle;
+    }
+    // Right to left brother
+    K MoveFirstToEndOf(BPlusTreeInternalPage& recipient, const K& middle) noexcept {
+        const int rn = recipient.GetSize();
+        recipient.SetKeyAt(rn, middle);
+        recipient.SetValueAt(rn, ValueAt(0));
+        recipient.SetSize(rn +1 );
+        const K new_middle = KeyAt(1);
+        const int n = GetSize();
+        for (int j = 0; j < n - 1; j++){
+            SetKeyAt(j, KeyAt(j + 1));
+            SetValueAt(j, ValueAt(j + 1));
+        }
+        SetSize(n - 1);
+        return new_middle;
+    }
+
+    void MoveAllTo(BPlusTreeInternalPage& recipient, const K& middle) noexcept {
+        const int rn = recipient.GetSize();
+        const int n  = GetSize();
+        recipient.SetKeyAt(rn, middle);
+        recipient.SetValueAt(rn, ValueAt(0));
+        for (int j = 1; j < n; ++j) {
+            recipient.SetKeyAt(rn + j, KeyAt(j)); recipient.SetValueAt(rn + j, ValueAt(j));
+        }
+        recipient.SetSize(rn + n);
+        SetSize(0);
+    }
+
         private:
         [[nodiscard]] int ValueIndex(page_id_t v) const noexcept {
             const int n = GetSize();

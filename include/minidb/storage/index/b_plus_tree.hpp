@@ -28,6 +28,9 @@ namespace minidb {
         bool Insert(const K& key, const V& value);
         [[nodiscard]] std::optional<V> GetValue(const K& key) const;
 
+
+        void Remove(const K& key);
+
         private:
         using LeafPage = BPlusTreeLeafPage<K, V, Cmp>;
         using InternalPage = BPlusTreeInternalPage<K, Cmp>;
@@ -35,7 +38,12 @@ namespace minidb {
             K key;
             page_id_t page_id;
         };
-
+        
+        [[nodiscard]] int LeafMin() const noexcept { return leaf_max_size_ / 2; }
+        [[nodiscard]] int InternalMin() const noexcept { return internal_max_size_ / 2; }
+        void RemoveRec(page_id_t page_id, const K& key);
+        void FixLeafUnderflow(InternalPage& node, int ci);
+        void FixInternalUnderflow(InternalPage& node, int ci);
 
 
         [[nodiscard]] page_id_t LeftmostLeaf() const;
@@ -227,4 +235,139 @@ namespace minidb {
         cur = node.LookUp(key, cmp_);
         }
     };
+
+    template <ByteCopyable K, ByteCopyable V, typename Cmp>
+    void BPlusTree<K, V, Cmp>::Remove(const K& key) {
+    if (root_page_id_ == INVALID_PAGE_ID) { return; }
+    RemoveRec(root_page_id_, key);
+    Page* p = bpm_->FetchPage(root_page_id_);
+    PageGuard guard(bpm_, p);
+    if (IsLeaf(p->Data())) {
+        LeafPage leaf(p->Data());
+        if (leaf.GetSize() == 0) {  
+        const page_id_t old = root_page_id_;
+        root_page_id_ = INVALID_PAGE_ID;
+        guard.Drop();
+        bpm_->DeletePage(old);
+        }
+    } else {
+        InternalPage node(p->Data());
+        if (node.GetSize() == 1) {  
+        const page_id_t old = root_page_id_;
+        const page_id_t new_root = node.ValueAt(0);
+        root_page_id_ = new_root;
+        guard.Drop();
+        bpm_->DeletePage(old);
+        }
+    }
+    };
+
+    template <ByteCopyable K, ByteCopyable V, typename Cmp>
+    void BPlusTree<K, V, Cmp>::RemoveRec(page_id_t page_id, const K& key) {
+        Page* p = bpm_->FetchPage(page_id);
+        PageGuard guard(bpm_, p);
+        if (IsLeaf(p->Data())) {
+            LeafPage leaf(guard.DataMut());
+            leaf.RemoveKey(key, cmp_);
+            return;
+        }
+        InternalPage node(guard.DataMut());
+        const int ci = node.LookupIndex(key, cmp_);
+        const page_id_t child_id = node.ValueAt(ci);
+        RemoveRec(child_id, key);
+
+        bool child_is_leaf = false;
+        int child_size = 0;
+        {
+            Page* cp = bpm_->FetchPage(child_id);
+            PageGuard cg(bpm_, cp);
+            child_is_leaf = IsLeaf(cp->Data());
+            child_size = child_is_leaf ? LeafPage(cp->Data()).GetSize() : InternalPage(cp->Data()).GetSize();
+        }
+        if (child_is_leaf) {
+            if (child_size < LeafMin()) {
+                FixLeafUnderflow(node, ci);
+            }
+        } else {
+            if (child_size < InternalMin()) {
+                FixInternalUnderflow(node, ci);
+            }
+        }
+    };
+
+    template <ByteCopyable K, ByteCopyable V, typename Cmp>
+    void BPlusTree<K, V, Cmp>::FixInternalUnderflow(InternalPage& node, int ci) {
+    const page_id_t child_id = node.ValueAt(ci);
+    Page* cp = bpm_->FetchPage(child_id);
+    PageGuard cg(bpm_, cp);
+    InternalPage child(cg.DataMut());
+    if (ci > 0) {  // irmão à ESQUERDA (índice ci-1)
+        const page_id_t left_id = node.ValueAt(ci - 1);
+        Page* lp = bpm_->FetchPage(left_id);
+        PageGuard lg(bpm_, lp);
+        InternalPage left(lg.DataMut());
+        if (left.GetSize() > InternalMin()) {              // EMPRESTA do esquerdo
+        const K new_mid = left.MoveLastToFrontOf(child, node.KeyAt(ci));
+        node.SetKeyAt(ci, new_mid);
+        } else {                                           // FUNDE o filho no esquerdo
+        child.MoveAllTo(left, node.KeyAt(ci));           // puxa o separador do pai pra baixo
+        node.RemoveAt(ci);
+        cg.Drop();
+        bpm_->DeletePage(child_id);
+        }
+    } else {  // irmão à DIREITA (índice ci+1)
+        const page_id_t right_id = node.ValueAt(ci + 1);
+        Page* rp = bpm_->FetchPage(right_id);
+        PageGuard rg(bpm_, rp);
+        InternalPage right(rg.DataMut());
+        if (right.GetSize() > InternalMin()) {             // EMPRESTA do direito
+        const K new_mid = right.MoveFirstToEndOf(child, node.KeyAt(ci + 1));
+        node.SetKeyAt(ci + 1, new_mid);
+        } else {                                           // FUNDE o direito no filho
+        right.MoveAllTo(child, node.KeyAt(ci + 1));
+        node.RemoveAt(ci + 1);
+        rg.Drop();
+        bpm_->DeletePage(right_id);
+        }
+    }
+    };
+
+    template <ByteCopyable K, ByteCopyable V, typename Cmp>
+    void BPlusTree<K, V, Cmp>::FixLeafUnderflow(InternalPage& node, int ci) {
+        const page_id_t child_id = node.ValueAt(ci);
+        Page* cp = bpm_->FetchPage(child_id);
+        PageGuard cg(bpm_, cp);
+        LeafPage child(cg.DataMut());
+        if (ci > 0) {
+            const page_id_t left_id = node.ValueAt(ci - 1);
+            Page* p = bpm_->FetchPage(left_id);
+            PageGuard pg(bpm_, p);
+            LeafPage left(pg.DataMut());
+            if (left.GetSize() > LeafMin()) {
+                left.MoveLastToFrontOf(child);
+                node.SetKeyAt(ci, child.KeyAt(0));
+            } else {
+                child.MoveAllTo(left);
+                left.SetNextPageId(child.GetNextPageId());
+                node.RemoveAt(ci);
+                cg.Drop();
+                bpm_->DeletePage(child_id);
+            }
+            } else  {
+            const page_id_t right_id = node.ValueAt(ci + 1);
+           Page* rp = bpm_->FetchPage(right_id);
+           PageGuard rg(bpm_, rp);
+           LeafPage right(rg.DataMut());
+           if (right.GetSize() > LeafMin()) {
+            right.MoveFirstToEndOf(child);
+            node.SetKeyAt(ci + 1, right.KeyAt(0));
+           } else {
+            right.MoveAllTo(child);
+            child.SetNextPageId(right.GetNextPageId());
+            node.RemoveAt(ci + 1);
+            rg.Drop();
+            bpm_->DeletePage(right_id);
+            }
+        }
+    }  
 }

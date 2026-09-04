@@ -14,3 +14,39 @@ para que serve struct no c++
 por que não lançar excessão? noexecpt 
 
 override é pra que? 
+
+percebo que tratamos com bytecopyable as coisas, e varchar/string que não são bytecopyable? tratamos isso ou ainda vamos?
+
+
+
+## TESTE PARA REVISAR NO FIM DO PROJETO 
+TEST_F(BPlusTreeTest, DeleteRandomStaysConsistent) {
+        DiskManager dm(path_);
+        BufferPoolManager bpm(400, &dm, 2);
+        Tree tree(&bpm, Int64Comparator{}, 4, 4);
+        const int kN = 300;
+        for (int k = 0; k < kN; ++k) { ASSERT_TRUE(tree.Insert(k, MakeRid(k))); }
+        std::vector<bool> present(static_cast<std::size_t>(kN), true);
+        std::vector<int> order(static_cast<std::size_t>(kN));
+        std::iota(order.begin(), order.end(), 0);
+        std::mt19937 rng(99);
+        std::shuffle(order.begin(), order.end(), rng);
+        for (int idx = 0; idx < kN; ++idx) {
+            const int k = order[static_cast<std::size_t>(idx)];
+            tree.Remove(k);
+            present[static_cast<std::size_t>(k)] = false;
+            EXPECT_FALSE(tree.GetValue(k).has_value());
+            if (idx % 30 == 0 || idx == kN - 1) {
+            std::vector<int> expected;
+            for (int j = 0; j < kN; ++j) {
+                if (present[static_cast<std::size_t>(j)]) { expected.push_back(j); }
+            }
+            std::vector<int> scanned;
+            for (auto it = tree.Begin(); it != tree.End(); ++it) {
+                scanned.push_back(static_cast<int>((*it).first));
+            }
+            EXPECT_EQ(scanned, expected);
+            }
+        }
+        EXPECT_TRUE(tree.Begin() == tree.End());
+        }

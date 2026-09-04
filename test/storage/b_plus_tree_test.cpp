@@ -117,5 +117,46 @@ namespace minidb {
             }
             EXPECT_EQ(expected, kN);
         }
+        TEST_F(BPlusTreeTest, RemoveBasic) {
+        DiskManager dm(path_);
+        BufferPoolManager bpm(100, &dm, 2);
+        Tree tree(&bpm, Int64Comparator{}, 4, 4);
+        for (int k = 0; k < 3; ++k) { tree.Insert(k, MakeRid(k)); }
+        tree.Remove(1);
+        EXPECT_FALSE(tree.GetValue(1).has_value());
+        EXPECT_TRUE(tree.GetValue(0).has_value());
+        EXPECT_TRUE(tree.GetValue(2).has_value());
+        }
+
+        TEST_F(BPlusTreeTest, DeleteRandomStaysConsistent) {
+        DiskManager dm(path_);
+        BufferPoolManager bpm(400, &dm, 2);
+        Tree tree(&bpm, Int64Comparator{}, 4, 4);
+        const int kN = 300;
+        for (int k = 0; k < kN; ++k) { ASSERT_TRUE(tree.Insert(k, MakeRid(k))); }
+        std::vector<bool> present(static_cast<std::size_t>(kN), true);
+        std::vector<int> order(static_cast<std::size_t>(kN));
+        std::iota(order.begin(), order.end(), 0);
+        std::mt19937 rng(99);
+        std::shuffle(order.begin(), order.end(), rng);
+        for (int idx = 0; idx < kN; ++idx) {
+            const int k = order[static_cast<std::size_t>(idx)];
+            tree.Remove(k);
+            present[static_cast<std::size_t>(k)] = false;
+            EXPECT_FALSE(tree.GetValue(k).has_value());
+            if (idx % 30 == 0 || idx == kN - 1) {
+            std::vector<int> expected;
+            for (int j = 0; j < kN; ++j) {
+                if (present[static_cast<std::size_t>(j)]) { expected.push_back(j); }
+            }
+            std::vector<int> scanned;
+            for (auto it = tree.Begin(); it != tree.End(); ++it) {
+                scanned.push_back(static_cast<int>((*it).first));
+            }
+            EXPECT_EQ(scanned, expected);
+            }
+        }
+        EXPECT_TRUE(tree.Begin() == tree.End());
+        }
     }
 }
