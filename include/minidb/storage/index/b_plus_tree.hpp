@@ -306,11 +306,11 @@ namespace minidb {
         Page* lp = bpm_->FetchPage(left_id);
         PageGuard lg(bpm_, lp);
         InternalPage left(lg.DataMut());
-        if (left.GetSize() > InternalMin()) {              // EMPRESTA do esquerdo
+        if (left.GetSize() > InternalMin()) {             
         const K new_mid = left.MoveLastToFrontOf(child, node.KeyAt(ci));
         node.SetKeyAt(ci, new_mid);
-        } else {                                           // FUNDE o filho no esquerdo
-        child.MoveAllTo(left, node.KeyAt(ci));           // puxa o separador do pai pra baixo
+        } else {                                          
+        child.MoveAllTo(left, node.KeyAt(ci));          
         node.RemoveAt(ci);
         cg.Drop();
         bpm_->DeletePage(child_id);
@@ -320,10 +320,10 @@ namespace minidb {
         Page* rp = bpm_->FetchPage(right_id);
         PageGuard rg(bpm_, rp);
         InternalPage right(rg.DataMut());
-        if (right.GetSize() > InternalMin()) {             // EMPRESTA do direito
+        if (right.GetSize() > InternalMin()) {             
         const K new_mid = right.MoveFirstToEndOf(child, node.KeyAt(ci + 1));
         node.SetKeyAt(ci + 1, new_mid);
-        } else {                                           // FUNDE o direito no filho
+        } else {                                        
         right.MoveAllTo(child, node.KeyAt(ci + 1));
         node.RemoveAt(ci + 1);
         rg.Drop();

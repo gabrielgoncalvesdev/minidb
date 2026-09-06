@@ -46,3 +46,7 @@ gtest_discover_tests(b_plus_tree_internal_page_test)
 add_executable(b_plus_tree_test storage/b_plus_tree_test.cpp)
 target_link_libraries(b_plus_tree_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
 gtest_discover_tests(b_plus_tree_test)
+
+add_executable(catalog_test catalog/catalog_test.cpp)
+target_link_libraries(catalog_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(catalog_test)

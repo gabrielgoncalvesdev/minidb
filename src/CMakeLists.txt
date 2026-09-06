@@ -7,6 +7,7 @@ add_library(minidb_core
   buffer/buffer_pool_manager.cpp
   type/value.cpp
   catalog/schema.cpp
+  catalog/catalog.cpp
   storage/table/tuple.cpp
   storage/table/table_page.cpp
   storage/table/table_heap.cpp
