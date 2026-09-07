@@ -1,0 +1,4 @@
+CompileFlags:
+  Add:
+    - "-I/home/bitcoin/dataBase/include"
+    - "-std=c++23"
