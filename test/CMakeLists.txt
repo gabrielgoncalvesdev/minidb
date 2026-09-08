@@ -54,3 +54,7 @@ gtest_discover_tests(catalog_test)
 add_executable(expression_test execution/expression_test.cpp)
 target_link_libraries(expression_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
 gtest_discover_tests(expression_test)
+
+add_executable(executor_test execution/executor_test.cpp)
+target_link_libraries(executor_test PRIVATE minidb_core minidb_warnings GTest::gtest_main)
+gtest_discover_tests(executor_test)
